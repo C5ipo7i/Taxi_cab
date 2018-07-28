@@ -1,0 +1,7 @@
+.venv
+__pycache__/
+.DS_Store
+.vscode/
+test.csv
+train.csv
+sample_submission.csv
