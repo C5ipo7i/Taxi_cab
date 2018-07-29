@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import os
-from Taxi_models import taxi_model,taxi_model_V2
+from Taxi_models import taxi_model,taxi_model_V2,taxi_model_V21
 import tensorflow as tf
 from day_of_week import vectorized_dayofweek
 from sklearn.preprocessing import StandardScaler
@@ -17,10 +17,8 @@ Split time into 24 classes
 Location could also be split into classes
 could factor in daylight savings time
 or sunrise/sunset.
-Could add the distance created by the edges of the triangle of the data points
 
 Next steps:
-Checkpointing
 Fit_generator
 V3 model with embeddings.
 
@@ -43,10 +41,10 @@ def load_model(taxi_input,L2,learning_rate,model_path):
     with tf.device("/cpu:0"):
         #model = load_model(model_path,custom_objects={'losses':losses,'value_mse_loss':value_mse_loss,'policy_log_loss':policy_log_loss})
         #if model_path == None:
-        model = taxi_model_V2(taxi_input,L2)
+        model = taxi_model_V21(taxi_input,L2)
         #else:
         #    model = load_model(model_path)
-        model.compile(optimizer=opt,loss='mse')
+        model.compile(optimizer=opt,loss='mean_absolute_error')
         model.summary()
     gpu_model = multi_gpu_model(model,2)
     gpu_model.compile(optimizer=opt,loss='logcosh')
@@ -83,70 +81,71 @@ def normalize_minmax(df):
     return normalized_df
 
 #for reproducibility 
-seed = 9
-np.random.seed(seed)
-train_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/train.csv',nrows=100)
-cleaned_dataset = clean_dataset(train_df)
-add_hour(cleaned_dataset)
-add_day(cleaned_dataset)
-add_perimeter_distance(cleaned_dataset)
+def main():
+    seed = 9
+    np.random.seed(seed)
+    train_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/train.csv',nrows=10000000)
+    cleaned_dataset = clean_dataset(train_df)
+    add_hour(cleaned_dataset)
+    add_day(cleaned_dataset)
+    add_perimeter_distance(cleaned_dataset)
 
-print(cleaned_dataset.isnull().sum(),'sum of nulls')
+    print(cleaned_dataset.isnull().sum(),'sum of nulls')
 
-#split dataset
-X = cleaned_dataset.loc[:,['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','passenger_count','hour','day','perimeter_distance']]
-y = cleaned_dataset['fare_amount']
-data_to_norm = cleaned_dataset.loc[:,['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','perimeter_distance']]
-data_classes_train = cleaned_dataset.loc[:,['passenger_count','hour','day']]
+    #split dataset
+    X = cleaned_dataset.loc[:,['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','passenger_count','hour','day','perimeter_distance']]
+    y = cleaned_dataset['fare_amount']
+    data_to_norm = cleaned_dataset.loc[:,['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','perimeter_distance']]
+    data_classes_train = cleaned_dataset.loc[:,['passenger_count','hour','day']]
 
-#Normalized training distance and LAT,LONG
-scaler = StandardScaler().fit(data_to_norm)
-X_train_scaled = pd.DataFrame(scaler.transform(data_to_norm), index=data_to_norm.index.values, columns=data_to_norm.columns.values)
-normalized_df_train = normalize_mean(data_to_norm)
+    #Normalized training distance and LAT,LONG
+    scaler = StandardScaler().fit(data_to_norm)
+    X_train_scaled = pd.DataFrame(scaler.transform(data_to_norm), index=data_to_norm.index.values, columns=data_to_norm.columns.values)
+    normalized_df_train = normalize_mean(data_to_norm)
 
-#concat the target training set
-X_train_mean = pd.concat([normalized_df_train,data_classes_train],axis=1)
-X_train_scalar = pd.concat([X_train_scaled,data_classes_train],axis=1)
+    #concat the target training set
+    X_train_mean = pd.concat([normalized_df_train,data_classes_train],axis=1)
+    X_train_scalar = pd.concat([X_train_scaled,data_classes_train],axis=1)
 
-#model vars
-taxi_input = np.array(len(X.columns)).reshape(1,)
-L2 = 0.01
-alpha = 0.002
-learning_rate=0.002
-#Will have to adjust this to local directory
-weight_path = '/media/shuza/HDD_Toshiba/Taxi_NYC/weights/weights_V2_best.hdf5'
-model_path = '/media/shuza/HDD_Toshiba/Taxi_NYC/Models/V2_checkpoint'
-verbosity = 1
-num_epochs = 50
-num_batches = 24
-validation = 0.005
-#Checkpoints
-checkpoint = return_checkpoints(weight_path,verbosity)
+    #model vars
+    taxi_input = np.array(len(X.columns)).reshape(1,)
+    L2 = 0.01
+    alpha = 0.002
+    learning_rate=0.002
+    #Will have to adjust this to local directory
+    weight_path = '/media/shuza/HDD_Toshiba/Taxi_NYC/weights/weights_V2_best.hdf5'
+    model_path = '/media/shuza/HDD_Toshiba/Taxi_NYC/Models/V2_checkpoint'
+    verbosity = 1
+    num_epochs = 100
+    num_batches = 1028
+    validation = 0.005
+    #Checkpoints
+    checkpoint = return_checkpoints(weight_path,verbosity)
 
-model = load_model(taxi_input,L2,learning_rate,model_path)
-train_with_checkpoint(model,X_train_mean,y,num_epochs,num_batches,validation,verbosity,checkpoint)
-#Train without checkpoints
-#train(model,X_train_mean,y,num_epochs,num_batches,validation,verbosity)
-save_model(model,model_path)
+    model = load_model(taxi_input,L2,learning_rate,model_path)
+    train_with_checkpoint(model,X_train_mean,y,num_epochs,num_batches,validation,verbosity,checkpoint)
+    #Train without checkpoints
+    #train(model,X_train_mean,y,num_epochs,num_batches,validation,verbosity)
+    save_model(model,model_path)
 
-#Will have to adjust this to local directory
-test_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/test.csv')
-add_hour(test_df)
-add_day(test_df)
-add_perimeter_distance(test_df)
+    #Will have to adjust this to local directory
+    test_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/test.csv')
+    add_hour(test_df)
+    add_day(test_df)
+    add_perimeter_distance(test_df)
 
-#test set
-test_X = test_df.loc[:,['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','passenger_count','hour','day','perimeter_distance']]
-data_to_norm_test = test_df.loc[:,['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','perimeter_distance']]
-data_classes_test = test_df.loc[:,['passenger_count','hour','day']]
-#Normalized test distance and LAT,LONG
-X_test_scaled = pd.DataFrame(scaler.transform(data_to_norm_test), index=data_to_norm_test.index.values, columns=data_to_norm_test.columns.values)
-normalized_df_test = normalize_mean(data_to_norm_test)
-#concat target test set
-X_test_mean = pd.concat([normalized_df_test,data_classes_test],axis=1)
-X_test_scalar = pd.concat([X_test_scaled,data_classes_test],axis=1)
+    #test set
+    test_X = test_df.loc[:,['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','passenger_count','hour','day','perimeter_distance']]
+    data_to_norm_test = test_df.loc[:,['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','perimeter_distance']]
+    data_classes_test = test_df.loc[:,['passenger_count','hour','day']]
+    #Normalized test distance and LAT,LONG
+    X_test_scaled = pd.DataFrame(scaler.transform(data_to_norm_test), index=data_to_norm_test.index.values, columns=data_to_norm_test.columns.values)
+    normalized_df_test = normalize_mean(data_to_norm_test)
+    #concat target test set
+    X_test_mean = pd.concat([normalized_df_test,data_classes_test],axis=1)
+    X_test_scalar = pd.concat([X_test_scaled,data_classes_test],axis=1)
 
-#swap out the Y value for whichever type of dataset you want
-test_y_predictions = predict_batch(model,X_test_mean)
-#create answer csv file
-#submit_answers(test_df,test_y_predictions)
+    #swap out the Y value for whichever type of dataset you want
+    test_y_predictions = predict_batch(model,X_test_mean)
+    #create answer csv file
+    submit_answers(test_df,test_y_predictions)
