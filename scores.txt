@@ -5,11 +5,52 @@ Trained on: 4853043
 Validated on: 24388
 Training Loss: 1.5303 (was still decreasing)
 Val Loss: 1.7591 (Had been lower)
+Test loss: 4.28
 Time: 1:20
 
 Training HyperParameters:
 Epochs: 50
 Validation_split: 0.005
+num_batches: 1028
+L2: 0.01
+learning_rate: 0.002
+
+Data was mean scaled. Classes left untouched
+
+Second submission:
+Model: Taxi_model_V21
+Used Checkpointing
+Added_features: add_hour,add_day,add_perimeter_distance
+Trained on: 9705795
+Validated on: 48773
+Training Loss: 1.5240
+Val Loss: 1.145179
+Test loss: 3.85
+Time: 5:30
+
+Training HyperParameters:
+Epochs: 100
+Validation_split: 0.005
+num_batches: 1028
+L2: 0.01
+learning_rate: 0.002
+
+Data was mean scaled. Classes left untouched
+
+Third submission:
+Model: Taxi_model_V3, Embedding, dropout on final layers
+Used Checkpointing, Embedding
+Added_features: add_hour,add_day,add_perimeter_distance
+Trained on: 19119725
+Validated on: 390199
+Training Loss: 2.1586
+Val Loss: 2.09024 (so far)
+Test loss: 3.85
+Time: 5:30
+
+Training HyperParameters:
+Epochs: 100
+Validation_split: 0.02
 num_batches: 1028
 L2: 0.01
 learning_rate: 0.002

@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import os
-from Taxi_models import taxi_model,taxi_model_V2,taxi_model_V21
+from Taxi_models import taxi_model,taxi_model_V2,taxi_model_V21,taxi_model_V3
 import tensorflow as tf
 from day_of_week import vectorized_dayofweek
 from sklearn.preprocessing import StandardScaler
@@ -11,16 +11,24 @@ from clean_data import clean_dataset
 
 """
 Outline:
+Need more features!
 Weekend/weekday marker
 Holiday marker
-Split time into 24 classes
+Split time into 24 classes, could further subdivide the time
 Location could also be split into classes
 could factor in daylight savings time
 or sunrise/sunset.
+More accurate way of measuring distance?
+could add euclidean distance
+Could estimate the number of blocks?
+Time traveled should be highly dependant on 
+
+Training:
+Probably can just use 10m and higher validation. maybe validate at 1m or near
 
 Next steps:
 Fit_generator
-V3 model with embeddings.
+Save cleaned training set!
 
 Try scaling the classes as well? see how that effects the outcome.
 Try SGD with nesterov
@@ -41,7 +49,7 @@ def load_model(taxi_input,L2,learning_rate,model_path):
     with tf.device("/cpu:0"):
         #model = load_model(model_path,custom_objects={'losses':losses,'value_mse_loss':value_mse_loss,'policy_log_loss':policy_log_loss})
         #if model_path == None:
-        model = taxi_model_V21(taxi_input,L2)
+        model = taxi_model_V3(taxi_input,L2)
         #else:
         #    model = load_model(model_path)
         model.compile(optimizer=opt,loss='mean_absolute_error')
@@ -80,11 +88,11 @@ def normalize_minmax(df):
     normalized_df=(df-df.min())/(df.max()-df.min())
     return normalized_df
 
-#for reproducibility 
 def main():
+    #for reproducibility 
     seed = 9
     np.random.seed(seed)
-    train_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/train.csv',nrows=10000000)
+    train_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/train.csv',nrows=20000000)
     cleaned_dataset = clean_dataset(train_df)
     add_hour(cleaned_dataset)
     add_day(cleaned_dataset)
@@ -113,12 +121,12 @@ def main():
     alpha = 0.002
     learning_rate=0.002
     #Will have to adjust this to local directory
-    weight_path = '/media/shuza/HDD_Toshiba/Taxi_NYC/weights/weights_V2_best.hdf5'
-    model_path = '/media/shuza/HDD_Toshiba/Taxi_NYC/Models/V2_checkpoint'
+    weight_path = '/media/shuza/HDD_Toshiba/Taxi_NYC/weights/weights_V3_best.hdf5'
+    model_path = '/media/shuza/HDD_Toshiba/Taxi_NYC/Models/V3_checkpoint'
     verbosity = 1
     num_epochs = 100
     num_batches = 1028
-    validation = 0.005
+    validation = 0.02
     #Checkpoints
     checkpoint = return_checkpoints(weight_path,verbosity)
 
@@ -149,3 +157,5 @@ def main():
     test_y_predictions = predict_batch(model,X_test_mean)
     #create answer csv file
     submit_answers(test_df,test_y_predictions)
+
+#main()

@@ -9,7 +9,7 @@ from sklearn.preprocessing import StandardScaler
 
 from Taxi_train import submit_answers,normalize_mean,predict_batch
 from feature_utils import *
-from Taxi_models import taxi_model_V21
+from Taxi_models import *
 
 #For making predictions with checkpointed gpu models
 
@@ -37,14 +37,14 @@ learning_rate=0.002
 
 #load checkpoint model
 model_path = '/media/shuza/HDD_Toshiba/Taxi_NYC/Models/V2_checkpoint'
-weight_path = '/media/shuza/HDD_Toshiba/Taxi_NYC/weights/weights_V2_best.hdf5'
+weight_path = '/media/shuza/HDD_Toshiba/Taxi_NYC/weights/weights_V3_best.hdf5'
 
 #compile model with hyperparams
 opt = Adam(lr=learning_rate,beta_1=0.9,beta_2=0.999,decay=0)
 with tf.device("/cpu:0"):
     #model = load_model(model_path,custom_objects={'losses':losses,'value_mse_loss':value_mse_loss,'policy_log_loss':policy_log_loss})
     #if model_path == None:
-    model = taxi_model_V21(taxi_input,L2)
+    model = taxi_model_V3(taxi_input,L2)
     #else:
     #    model = load_model(model_path)
     model.compile(optimizer=opt,loss='mean_absolute_error')
