@@ -95,18 +95,21 @@ def main(decimals,num_rows):
     np.random.seed(seed)
     train_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/train.csv',nrows=num_rows)
     cleaned_dataset = clean_dataset(train_df)
-    add_hour(cleaned_dataset)
+    #add_hour(cleaned_dataset)
+    add_24_hour(cleaned_dataset)
     add_day(cleaned_dataset)
     add_perimeter_distance(cleaned_dataset)
     add_location_categories(cleaned_dataset,decimals) # 2 decimals = 200 * 300 = 60k
-    add_holidays(cleaned_dataset)
+    #add_holidays(cleaned_dataset)
 
     print(cleaned_dataset.isnull().sum(),'sum of nulls')
 
     #split dataset
+    #X = cleaned_dataset.loc[:,['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','passenger_count','hour','day','perimeter_distance','pickup_region','dropoff_region','holiday']]
     X = cleaned_dataset.loc[:,['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','passenger_count','hour','day','perimeter_distance','pickup_region','dropoff_region']]
     y = cleaned_dataset['fare_amount']
     data_to_norm = cleaned_dataset.loc[:,['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','perimeter_distance']]
+    #data_classes_train = cleaned_dataset.loc[:,['passenger_count','hour','day','pickup_region','dropoff_region','holiday']]
     data_classes_train = cleaned_dataset.loc[:,['passenger_count','hour','day','pickup_region','dropoff_region']]
 
     #Normalized training distance and LAT,LONG
@@ -143,14 +146,18 @@ def main(decimals,num_rows):
 
     #Will have to adjust this to local directory
     test_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/test.csv')
-    add_hour(test_df)
+    #add_hour(test_df)
+    add_24_hour(cleaned_dataset)
     add_day(test_df)
     add_perimeter_distance(test_df)
     add_location_categories(test_df,decimals) # 2 decimals = 200 * 300 = 60k
+    #add_holidays(test_df)
 
     #test set
+    #test_X = test_df.loc[:,['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','passenger_count','hour','day','perimeter_distance','pickup_region','dropoff_region','holiday']]
     test_X = test_df.loc[:,['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','passenger_count','hour','day','perimeter_distance','pickup_region','dropoff_region']]
     data_to_norm_test = test_df.loc[:,['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','perimeter_distance']]
+    #data_classes_test = test_df.loc[:,['passenger_count','hour','day','pickup_region','dropoff_region','holiday']]
     data_classes_test = test_df.loc[:,['passenger_count','hour','day','pickup_region','dropoff_region']]
     #Normalized test distance and LAT,LONG
     X_test_scaled = pd.DataFrame(scaler.transform(data_to_norm_test), index=data_to_norm_test.index.values, columns=data_to_norm_test.columns.values)

@@ -13,10 +13,11 @@ def add_hour(df):
     hours = np.add(np.multiply(hour_num.values,7),minute_num)
     df['hour'] = hours
 
+def add_24_hour(df):
     #24 categories
-    #new_test = df.pickup_datetime.str.split().str.get(-2).str.split(':').str.get(0)
-    #hours = pd.to_numeric(new_test, errors='coerce')
-    #df['hour'] = hours
+    new_test = df.pickup_datetime.str.split().str.get(-2).str.split(':').str.get(0)
+    hours = pd.to_numeric(new_test, errors='coerce')
+    df['hour'] = hours
 
 def add_day(df):
     new_test = df.pickup_datetime.str.split().str.get(0).str.split('-')

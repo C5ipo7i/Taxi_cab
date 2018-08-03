@@ -15,7 +15,8 @@ from Taxi_models import *
 decimals = 2
 #load data
 test_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/test.csv')
-add_hour(test_df)
+#add_hour(test_df)
+add_24_hour(cleaned_dataset)
 add_day(test_df)
 add_perimeter_distance(test_df)
 add_location_categories(test_df,decimals) # 2 decimals = 200 * 300 = 60k
