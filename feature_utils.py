@@ -61,7 +61,7 @@ def add_location_categories(df,decimals):
     df['pickup_region'] = pickup_regions
     df['dropoff_region'] = dropoff_regions
 
-def add_holidays(df,num_rows):
+def add_holidays(df):
     #2009 min year, 2015 max year
     from pandas.tseries.holiday import USFederalHolidayCalendar
     cal = USFederalHolidayCalendar()

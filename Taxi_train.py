@@ -92,7 +92,6 @@ def normalize_minmax(df):
 def main(decimals,num_rows):
     #for reproducibility 
     seed = 9
-    num_rows = 100
     np.random.seed(seed)
     train_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/train.csv',nrows=num_rows)
     cleaned_dataset = clean_dataset(train_df)
@@ -100,7 +99,7 @@ def main(decimals,num_rows):
     add_day(cleaned_dataset)
     add_perimeter_distance(cleaned_dataset)
     add_location_categories(cleaned_dataset,decimals) # 2 decimals = 200 * 300 = 60k
-    add_holidays(cleaned_dataset,num_rows)
+    add_holidays(cleaned_dataset)
 
     print(cleaned_dataset.isnull().sum(),'sum of nulls')
 
