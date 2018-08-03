@@ -56,3 +56,22 @@ L2: 0.01
 learning_rate: 0.002
 
 Data was mean scaled. Classes left untouched
+
+Fourth Submission:
+Model: Taxi_model_V4, Embedding, dropout on final layers
+Added_features: add_hour (168) ,add_day,add_perimeter_distance,Regions 60k.
+Trained on: 9266839
+Validated on: 487729
+Training Loss: 1.476
+Val Loss: 1.443
+Test loss: 3.6
+Time: 5:30
+
+Training HyperParameters:
+Epochs: 100
+Validation_split: 0.05
+num_batches: 1028
+L2: 0.01
+learning_rate: 0.002
+
+Data was standard scaled
