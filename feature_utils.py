@@ -10,7 +10,7 @@ def add_hour(df):
     hour_num = pd.to_numeric(hour, errors='coerce')
     minute = data.get(1).str[0]
     minute_num = pd.to_numeric(minute, errors='coerce')
-    hours = np.add(np.multiply(hour_num.values,7),minute_num)
+    hours = np.add(np.multiply(hour_num.values,6),minute_num)
     df['hour'] = hours
 
 def add_24_hour(df):
@@ -73,6 +73,53 @@ def add_holidays(df):
     bools = np.array(dates.values[:,None] == holidays)
     holidays = np.sum(bools,axis=-1)
     df['holiday'] = holidays
+    print('finished with holidays')
 
-def K_mean_regions():
-    pass
+def add_K_mean_regions(df,clusters):
+    from sklearn.cluster import KMeans
+    kmeans_pickup = KMeans(n_clusters=clusters)
+    kmeans_dropoff = KMeans(n_clusters=clusters)
+    X_dropoff = pd.concat([df.dropoff_longitude,df.dropoff_latitude],axis=1)
+    X_pickup = pd.concat([df.pickup_longitude,df.pickup_latitude],axis=1)
+    kmeans_pickup = kmeans_pickup.fit(X_pickup.iloc[:1000000])
+    pickup_labels = kmeans_pickup.predict(X_pickup)
+    kmeans_dropoff = kmeans_dropoff.fit(X_dropoff.iloc[:1000000])
+    dropoff_labels = kmeans_dropoff.predict(X_dropoff)
+    #C = kmeans.cluster_centers_ #gives location of the cluster centers
+    df['pickup_clusters'] = pickup_labels
+    df['dropoff_clusters'] = dropoff_labels
+    print('finished with Kmean_regions')
+    return kmeans_pickup.cluster_centers_,kmeans_dropoff.cluster_centers_
+
+def add_K_mean_grid_routes(df,routes):
+    from sklearn.cluster import KMeans
+    kmeans_route = KMeans(n_clusters=routes)
+    X_route = pd.concat([df.pickup_region,df.dropoff_region],axis=1)
+    kmeans_route = kmeans_route.fit(X_route.iloc[:1000000])
+    route_labels = kmeans_route.predict(X_route)
+    #C = kmeans.cluster_centers_ #gives location of the cluster centers
+    df['route_grid_clusters'] = route_labels
+    print('finished with Kmean_grid_routes')
+    return kmeans_route.cluster_centers_
+
+def add_K_mean_cluster_routes(df,routes):
+    from sklearn.cluster import KMeans
+    kmeans_route = KMeans(n_clusters=routes)
+    X_route = pd.concat([df.pickup_clusters,df.dropoff_clusters],axis=1)
+    kmeans_route = kmeans_route.fit(X_route.iloc[:1000000])
+    route_labels = kmeans_route.predict(X_route)
+    #C = kmeans.cluster_centers_ #gives location of the cluster centers
+    df['route_cluster_routes'] = route_labels
+    print('finished with Kmean_cluster_routes')
+    return kmeans_route.cluster_centers_
+
+def add_K_mean_routes(df,routes):
+    from sklearn.cluster import KMeans
+    kmeans_route = KMeans(n_clusters=routes)
+    X_route = pd.concat([df.pickup_longitude,df.pickup_latitude,df.dropoff_longitude,df.dropoff_latitude],axis=1)
+    kmeans_route = kmeans_route.fit(X_route.iloc[:1000000])
+    route_labels = kmeans_route.predict(X_route)
+    #C = kmeans.cluster_centers_ #gives location of the cluster centers
+    df['route_clusters'] = route_labels
+    print('finished with Kmean_latlong_route_clusters')
+    return kmeans_route.cluster_centers_

@@ -86,6 +86,14 @@ def split_pickup(tensor):
     return tensor[:,3]
 def split_dropoff(tensor):
     return tensor[:,4]
+def split_holiday(tensor):
+    return tensor[:,5]
+def split_pickup_cluster(tensor):
+    return tensor[:,6]
+def split_dropoff_cluster(tensor):
+    return tensor[:,7]
+def split_route_cluster(tensor):
+    return tensor[:,8]
 
 
 #Think the classes are -2 and -3? recheck this
@@ -169,6 +177,71 @@ def taxi_model_V4(Input_shape,L2,regions):
     #X_start = Concatenate(axis=-1)([X_class,X_data])
     X_start = Concatenate(axis=-1)([X_start_1,data])
     #print(X_start.shape,'after concate')
+
+    X_skip = Dense(512,activation='relu',kernel_regularizer=regularizers.l2(L2))(X_start)
+    X = BatchNormalization(axis=1, epsilon=0.00001, name='bn0')(X_skip)
+    X = Dense(512,activation='relu',kernel_regularizer=regularizers.l2(L2))(X)
+    X = BatchNormalization(axis=1, epsilon=0.00001, name='bn1')(X)
+    print(X_skip.shape,X.shape,'prior to add')
+    X = Add()([X_skip,X])
+    X_skip_2 = Dense(512,activation='relu',kernel_regularizer=regularizers.l2(L2))(X)
+    X = BatchNormalization(axis=1, epsilon=0.00001, name='bn2')(X_skip_2)
+    X = Dense(512,activation='relu',kernel_regularizer=regularizers.l2(L2))(X)
+    X = BatchNormalization(axis=1, epsilon=0.00001, name='bn3')(X)
+    print(X_skip_2.shape,X.shape,'prior to add')
+    X = Add()([X_skip,X_skip_2,X])
+    X = Dense(512,activation='relu',kernel_regularizer=regularizers.l2(L2))(X)
+    #X = Dropout(0.8)(X)
+    X = BatchNormalization(axis=1, epsilon=0.00001, name='bn4')(X)
+    X = Dense(512,activation='relu',kernel_regularizer=regularizers.l2(L2))(X)
+    #X = Dropout(0.8)(X)
+    X = BatchNormalization(axis=1, epsilon=0.00001, name='bn5')(X)
+    X = Dense(1)(X)
+    model = Model(inputs = X_input, outputs = X, name='multimodel')
+    return model
+
+def taxi_model_V5(Input_shape,L2,regions,clusters,routes):
+    X_input = Input(Input_shape)
+
+    data = Lambda(split_data,output_shape=(5,))(X_input)
+    classes = Lambda(split_class,output_shape=(3,))(X_input)
+    print(classes.shape,'classes')
+    passengers = Lambda(split_passengers,output_shape=(1,))(classes)
+    hour = Lambda(split_hour,output_shape=(1,))(classes)
+    day = Lambda(split_day,output_shape=(1,))(classes)
+    pickup = Lambda(split_pickup,output_shape=(1,))(classes)
+    dropoff = Lambda(split_dropoff,output_shape=(1,))(classes)
+    holiday = Lambda(split_holiday,output_shape=(1,))(classes)
+    pickup_cluster = Lambda(split_pickup_cluster,output_shape=(1,))(classes)
+    dropoff_cluster = Lambda(split_dropoff_cluster,output_shape=(1,))(classes) 
+    routes_cluster = Lambda(split_route_cluster,output_shape=(1,))(classes) 
+
+    print(data.shape,classes.shape,passengers.shape,hour.shape,day.shape,pickup.shape,dropoff.shape,'inputs')
+
+    location_embedding = Embedding(regions,32)
+    route_embedding = Embedding(routes,32)
+
+    C1 = Embedding(7,32,)(passengers)
+    C2 = Embedding(169,128,)(hour)
+    C3 = Embedding(8,128,)(day)
+    C4 = location_embedding(pickup)
+    C5 = location_embedding(dropoff)
+    #C6 = Embedding(2,32,)(holiday)
+    #C7 = Embedding(clusters,32,)(pickup_cluster)
+    #C8 = Embedding(clusters,32,)(dropoff_cluster)
+    C9 = route_embedding(routes_cluster)
+    #data = Reshape((1,5))(data)
+
+    X_start_2 = Concatenate(axis=-1)([C1,C2,C3,C4,C5,C9]) #,C7,C8
+    #print(X_start_2.shape,'first concate')
+    #X_class = Dense(256,activation='relu',kernel_regularizer=regularizers.l2(L2))(X_start_2)
+    #X_data = Dense(256,activation='relu',kernel_regularizer=regularizers.l2(L2))(data)
+    X_start_1 = Reshape((int(X_start_2.shape[-1]),))(X_start_2)
+    print(X_start_2.shape,data.shape,'first concate')
+    #print(X_class.shape,data.shape,'first concate')
+    #X_start = Concatenate(axis=-1)([X_class,X_data])
+    X_start = Concatenate(axis=-1)([X_start_1,data])
+    print(X_start.shape,'after concate')
 
     X_skip = Dense(512,activation='relu',kernel_regularizer=regularizers.l2(L2))(X_start)
     X = BatchNormalization(axis=1, epsilon=0.00001, name='bn0')(X_skip)

@@ -71,5 +71,7 @@ def check_test_set():
 #paths cols = [['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','passenger_count','hour','day','perimeter_distance']],
 #folder = '/media/shuza/HDD_Toshiba/Taxi_NYC/Training_set'
 
+def save_cleaned_dataset(df):
+    pass
 #need to save in chucks due to size. and potentially in multiple files and then append
 #cleaned_training_set.to_csv('cleaned_training_set.csv',chunksize=1000,mode='a',index = False)
