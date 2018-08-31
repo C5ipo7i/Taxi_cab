@@ -97,91 +97,91 @@ def main(decimals,num_rows,clusters,routes):
     try:
         with open('/mnt/obelisk/taxi_cab/clean_train.csv') as clean_train_csv:
             cleaned_dataset = pd.read_csv(clean_train_csv,nrows=num_rows)
+        tic = time.time()
+        add_hour(cleaned_dataset)
+        #add_24_hour(cleaned_dataset)
+        add_day(cleaned_dataset)
+        add_perimeter_distance(cleaned_dataset)
+        add_location_categories(cleaned_dataset,decimals) # 2 decimals = 200 * 300 = 60k
+        #add_holidays(cleaned_dataset)
+        region_clusters = add_K_mean_regions(cleaned_dataset,clusters)
+        #grid_clusters = add_K_mean_grid_routes(cleaned_dataset,routes)
+        #default_clusters = add_K_mean_routes(df,routes)
+        #np.savetxt(self.plot_path+str(i)+".txt", numpy_loss_history, delimiter=",")
+        toc = time.time()
+        print("Adding features took ",str((toc-tic)/60),' Minutes')
+
+        #print(cleaned_dataset.isnull().sum(),'sum of nulls')
+        #save Cluster centers so don't have to recalculate them
+
+        #split dataset
+        X = cleaned_dataset.loc[:,['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','passenger_count','hour','day','perimeter_distance','pickup_region','dropoff_region','route_grid_clusters']]#'pickup_clusters','dropoff_clusters'
+        y = cleaned_dataset['fare_amount']
+        data_to_norm = cleaned_dataset.loc[:,['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','perimeter_distance']]
+        data_classes_train = cleaned_dataset.loc[:,['passenger_count','hour','day','pickup_region','dropoff_region','route_grid_clusters']]#'pickup_clusters','dropoff_clusters'
+        #Normalized training distance and LAT,LONG
+        scaler = StandardScaler().fit(data_to_norm)
+        X_train_scaled = pd.DataFrame(scaler.transform(data_to_norm), index=data_to_norm.index.values, columns=data_to_norm.columns.values)
+        normalized_df_train = normalize_mean(data_to_norm)
+
+        #concat the target training set
+        X_train_mean = pd.concat([normalized_df_train,data_classes_train],axis=1)
+        X_train_scalar = pd.concat([X_train_scaled,data_classes_train],axis=1)
+
+        #model vars
+        taxi_input = np.array(len(X.columns)).reshape(1,)
+        regions = ((2*10**decimals)+10**(decimals-1)) * 3*10**decimals
+        print(regions,'regions')
+        L2 = 0.01
+        alpha = 0.002
+        learning_rate=0.002
+        #Will have to adjust this to local directory
+        weight_path = '/mnt/obelisk/taxi_cab/weights/weights_V5_best.hdf5'
+        model_path = '/mnt/obelisk/taxi_cab/Models/V5_checkpoint'
+        verbosity = 1
+        num_epochs = 100
+        num_batches = 1024
+        validation = 0.05
+        #Checkpoints
+        checkpoint = return_checkpoints(weight_path,verbosity)
+
+        model = load_model(taxi_input,L2,learning_rate,model_path,regions,clusters,routes)
+        train_with_checkpoint(model,X_train_scalar,y,num_epochs,num_batches,validation,verbosity,checkpoint)
+        #Train without checkpoints
+        #train(model,X_train_mean,y,num_epochs,num_batches,validation,verbosity)
+        save_model(model,model_path)
+
+        #Will have to adjust this to local directory
+        test_df = pd.read_csv('/mnt/obelisk/taxi_cab/test.csv')
+        add_hour(test_df)
+        #add_24_hour(test_df)
+        add_day(test_df)
+        add_perimeter_distance(test_df)
+        add_location_categories(test_df,decimals) # 2 decimals = 200 * 300 = 60k
+        #add_holidays(test_df)
+        add_K_mean_regions(test_df,clusters)
+        #add_K_mean_grid_routes(test_df,routes)
+
+
+        #test set
+        test_X = test_df.loc[:,['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','passenger_count','hour','day','perimeter_distance','pickup_region','dropoff_region','route_grid_clusters']]#'pickup_clusters','dropoff_clusters',
+        data_to_norm_test = test_df.loc[:,['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','perimeter_distance']]
+        data_classes_test = test_df.loc[:,['passenger_count','hour','day','pickup_region','dropoff_region','route_grid_clusters']]#'pickup_clusters','dropoff_clusters',
+        #Normalized test distance and LAT,LONG
+        X_test_scaled = pd.DataFrame(scaler.transform(data_to_norm_test), index=data_to_norm_test.index.values, columns=data_to_norm_test.columns.values)
+        normalized_df_test = normalize_mean(data_to_norm_test)
+        #concat target test set
+        X_test_mean = pd.concat([normalized_df_test,data_classes_test],axis=1)
+        X_test_scalar = pd.concat([X_test_scaled,data_classes_test],axis=1)
+
+        #swap out the Y value for whichever type of dataset you want
+        test_y_predictions = predict_batch(model,X_test_scalar)
+        #create answer csv file
+        submit_answers(test_df,test_y_predictions)
     except IOError as e:
-        print("BuildingFile: 'clean_train.csv' doesn't exist. Building file for future use.")
-        train_df = pd.read_csv('/mnt/obelisk/taxi_cab/train.csv',nrows=num_rows)
-        cleaned_dataset = clean_dataset(train_df)
-    tic = time.time()
-    add_hour(cleaned_dataset)
-    #add_24_hour(cleaned_dataset)
-    add_day(cleaned_dataset)
-    add_perimeter_distance(cleaned_dataset)
-    add_location_categories(cleaned_dataset,decimals) # 2 decimals = 200 * 300 = 60k
-    #add_holidays(cleaned_dataset)
-    region_clusters = add_K_mean_regions(cleaned_dataset,clusters)
-    #grid_clusters = add_K_mean_grid_routes(cleaned_dataset,routes)
-    #default_clusters = add_K_mean_routes(df,routes)
-    #np.savetxt(self.plot_path+str(i)+".txt", numpy_loss_history, delimiter=",")
-    toc = time.time()
-    print("Adding features took ",str((toc-tic)/60),' Minutes')
-
-    #print(cleaned_dataset.isnull().sum(),'sum of nulls')
-    #save Cluster centers so don't have to recalculate them
-
-    #split dataset
-    X = cleaned_dataset.loc[:,['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','passenger_count','hour','day','perimeter_distance','pickup_region','dropoff_region','route_grid_clusters']]#'pickup_clusters','dropoff_clusters'
-    y = cleaned_dataset['fare_amount']
-    data_to_norm = cleaned_dataset.loc[:,['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','perimeter_distance']]
-    data_classes_train = cleaned_dataset.loc[:,['passenger_count','hour','day','pickup_region','dropoff_region','route_grid_clusters']]#'pickup_clusters','dropoff_clusters'
-    #Normalized training distance and LAT,LONG
-    scaler = StandardScaler().fit(data_to_norm)
-    X_train_scaled = pd.DataFrame(scaler.transform(data_to_norm), index=data_to_norm.index.values, columns=data_to_norm.columns.values)
-    normalized_df_train = normalize_mean(data_to_norm)
-
-    #concat the target training set
-    X_train_mean = pd.concat([normalized_df_train,data_classes_train],axis=1)
-    X_train_scalar = pd.concat([X_train_scaled,data_classes_train],axis=1)
-
-    #model vars
-    taxi_input = np.array(len(X.columns)).reshape(1,)
-    regions = ((2*10**decimals)+10**(decimals-1)) * 3*10**decimals
-    print(regions,'regions')
-    L2 = 0.01
-    alpha = 0.002
-    learning_rate=0.002
-    #Will have to adjust this to local directory
-    weight_path = '/mnt/obelisk/taxi_cab/weights/weights_V5_best.hdf5'
-    model_path = '/mnt/obelisk/taxi_cab/Models/V5_checkpoint'
-    verbosity = 1
-    num_epochs = 100
-    num_batches = 1024
-    validation = 0.05
-    #Checkpoints
-    checkpoint = return_checkpoints(weight_path,verbosity)
-
-    model = load_model(taxi_input,L2,learning_rate,model_path,regions,clusters,routes)
-    train_with_checkpoint(model,X_train_scalar,y,num_epochs,num_batches,validation,verbosity,checkpoint)
-    #Train without checkpoints
-    #train(model,X_train_mean,y,num_epochs,num_batches,validation,verbosity)
-    save_model(model,model_path)
-
-    #Will have to adjust this to local directory
-    test_df = pd.read_csv('/mnt/obelisk/taxi_cab/test.csv')
-    add_hour(test_df)
-    #add_24_hour(test_df)
-    add_day(test_df)
-    add_perimeter_distance(test_df)
-    add_location_categories(test_df,decimals) # 2 decimals = 200 * 300 = 60k
-    #add_holidays(test_df)
-    add_K_mean_regions(test_df,clusters)
-    #add_K_mean_grid_routes(test_df,routes)
-
-
-    #test set
-    test_X = test_df.loc[:,['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','passenger_count','hour','day','perimeter_distance','pickup_region','dropoff_region','route_grid_clusters']]#'pickup_clusters','dropoff_clusters',
-    data_to_norm_test = test_df.loc[:,['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','perimeter_distance']]
-    data_classes_test = test_df.loc[:,['passenger_count','hour','day','pickup_region','dropoff_region','route_grid_clusters']]#'pickup_clusters','dropoff_clusters',
-    #Normalized test distance and LAT,LONG
-    X_test_scaled = pd.DataFrame(scaler.transform(data_to_norm_test), index=data_to_norm_test.index.values, columns=data_to_norm_test.columns.values)
-    normalized_df_test = normalize_mean(data_to_norm_test)
-    #concat target test set
-    X_test_mean = pd.concat([normalized_df_test,data_classes_test],axis=1)
-    X_test_scalar = pd.concat([X_test_scaled,data_classes_test],axis=1)
-
-    #swap out the Y value for whichever type of dataset you want
-    test_y_predictions = predict_batch(model,X_test_scalar)
-    #create answer csv file
-    submit_answers(test_df,test_y_predictions)
+        print("BuildingFile: 'clean_train.csv' doesn't exist. Building file for future use. Rerun program once done.")
+        train_df = pd.read_csv('/mnt/obelisk/taxi_cab/train.csv')
+        clean_dataset(train_df)
 
 clusters = 1500
 routes = 10000

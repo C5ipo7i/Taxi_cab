@@ -68,7 +68,7 @@ def clean_dataset(train_df):
         for index, row in cleaned_training_set.iterrows():
             csv_output.writerow(row)
 
-    return cleaned_training_set
+    #return cleaned_training_set
 
 
 #check test set for outliers
