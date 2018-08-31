@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import os
+import csv
 
 from feature_utils import *
 
@@ -28,8 +29,8 @@ Fix saving so don't have to clean dataset everytime. And can load from disk
 """
 
 def clean_dataset(train_df):
-#train_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/train.csv',nrows=100000)
-    #train_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/train.csv')
+#train_df = pd.read_csv('/mnt/obelisk/taxi_cab/train.csv',nrows=100000)
+    #train_df = pd.read_csv('/mnt/obelisk/taxi_cab/train.csv')
 
     #max_list = [max(train_df.dropoff_longitude),max(train_df.pickup_longitude),max(train_df.dropoff_latitude),max(train_df.pickup_latitude),max(train_df.passenger_count)]
     #min_list = [min(train_df.dropoff_longitude),min(train_df.pickup_longitude),min(train_df.dropoff_latitude),min(train_df.pickup_latitude),min(train_df.passenger_count)]
@@ -58,20 +59,29 @@ def clean_dataset(train_df):
     print('New size: %d' % len(train_df))
 
     cleaned_training_set = train_df
+
+    #creating new csv called clean_train
+    clean_train_df = '/mnt/obelisk/taxi_cab/clean_train.csv'
+    with open(clean_train_df, 'w', newline='\n') as f_output:
+        csv_output = csv.writer(f_output)
+        #while new file is open, write rows from cleaned_training_set to it
+        for index, row in cleaned_training_set.iterrows():
+            csv_output.writerow(row)
+
     return cleaned_training_set
 
 
 #check test set for outliers
 def check_test_set():
-    test_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/test.csv')
+    test_df = pd.read_csv('/mnt/obelisk/taxi_cab/test.csv')
     max_list = [max(test_df.dropoff_longitude),max(test_df.pickup_longitude),max(test_df.dropoff_latitude),max(test_df.pickup_latitude),max(test_df.passenger_count)]
     min_list = [min(test_df.dropoff_longitude),min(test_df.pickup_longitude),min(test_df.dropoff_latitude),min(test_df.pickup_latitude),min(test_df.passenger_count)]
     print(max_list,'final max values')
     print(min_list,'final min values')
 #paths cols = [['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','passenger_count','hour','day','perimeter_distance']],
-#folder = '/media/shuza/HDD_Toshiba/Taxi_NYC/Training_set'
+#folder = '/mnt/obelisk/taxi_cab/Training_set'
 
-def save_cleaned_dataset(df):
-    pass
+#def save_cleaned_dataset(df):
+    #pass
 #need to save in chucks due to size. and potentially in multiple files and then append
 #cleaned_training_set.to_csv('cleaned_training_set.csv',chunksize=1000,mode='a',index = False)

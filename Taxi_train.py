@@ -94,8 +94,13 @@ def main(decimals,num_rows,clusters,routes):
     #for reproducibility 
     seed = 9
     np.random.seed(seed)
-    train_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/train.csv',nrows=num_rows)
-    cleaned_dataset = clean_dataset(train_df)
+    try:
+        with open('/mnt/obelisk/taxi_cab/clean_train.csv') as clean_train_csv:
+            cleaned_dataset = pd.read_csv(clean_train_csv,nrows=num_rows)
+    except IOError as e:
+        print("BuildingFile: 'clean_train.csv' doesn't exist. Building file for future use.")
+        train_df = pd.read_csv('/mnt/obelisk/taxi_cab/train.csv',nrows=num_rows)
+        cleaned_dataset = clean_dataset(train_df)
     tic = time.time()
     add_hour(cleaned_dataset)
     #add_24_hour(cleaned_dataset)
@@ -135,8 +140,8 @@ def main(decimals,num_rows,clusters,routes):
     alpha = 0.002
     learning_rate=0.002
     #Will have to adjust this to local directory
-    weight_path = '/media/shuza/HDD_Toshiba/Taxi_NYC/weights/weights_V5_best.hdf5'
-    model_path = '/media/shuza/HDD_Toshiba/Taxi_NYC/Models/V5_checkpoint'
+    weight_path = '/mnt/obelisk/taxi_cab/weights/weights_V5_best.hdf5'
+    model_path = '/mnt/obelisk/taxi_cab/Models/V5_checkpoint'
     verbosity = 1
     num_epochs = 100
     num_batches = 1024
@@ -151,7 +156,7 @@ def main(decimals,num_rows,clusters,routes):
     save_model(model,model_path)
 
     #Will have to adjust this to local directory
-    test_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/test.csv')
+    test_df = pd.read_csv('/mnt/obelisk/taxi_cab/test.csv')
     add_hour(test_df)
     #add_24_hour(test_df)
     add_day(test_df)
