@@ -56,9 +56,9 @@ def load_model(taxi_input,L2,learning_rate,model_path,regions,clusters,routes):
         #    model = load_model(model_path)
         model.compile(optimizer=opt,loss='mean_absolute_error')
         model.summary()
-    gpu_model = multi_gpu_model(model,2)
-    gpu_model.compile(optimizer=opt,loss='logcosh')
-    return gpu_model
+    #gpu_model = multi_gpu_model(model,2)
+    #gpu_model.compile(optimizer=opt,loss='logcosh')
+    return model
 
 #Implement check pointing. Learningrate step function. Fit_generator
 def train_model(model,X,Y,num_epochs,num_batches,validation,verbosity):
@@ -95,7 +95,7 @@ def main(decimals,num_rows,clusters,routes):
     seed = 9
     np.random.seed(seed)
     try:
-        with open('/mnt/obelisk/taxi_cab/clean_train.csv') as clean_train_csv:
+        with open('/mnt/obelisk/projects/Taxi_cab/clean_train.csv') as clean_train_csv:
             cleaned_dataset = pd.read_csv(clean_train_csv,nrows=num_rows)
         tic = time.time()
         add_hour(cleaned_dataset)
@@ -136,8 +136,8 @@ def main(decimals,num_rows,clusters,routes):
         alpha = 0.002
         learning_rate=0.002
         #Will have to adjust this to local directory
-        weight_path = '/mnt/obelisk/taxi_cab/weights/weights_V5_best.hdf5'
-        model_path = '/mnt/obelisk/taxi_cab/Models/V5_checkpoint'
+        weight_path = '/mnt/obelisk/projects/Taxi_cab/weights/weights_V5_best.hdf5'
+        model_path = '/mnt/obelisk/projects/Taxi_cab/models/V5_checkpoint'
         verbosity = 1
         num_epochs = 100
         num_batches = 1024
@@ -152,7 +152,7 @@ def main(decimals,num_rows,clusters,routes):
         save_model(model,model_path)
 
         #Will have to adjust this to local directory
-        test_df = pd.read_csv('/mnt/obelisk/taxi_cab/test.csv')
+        test_df = pd.read_csv('/mnt/obelisk/projects/Taxi_cab/test.csv')
         add_hour(test_df)
         #add_24_hour(test_df)
         add_day(test_df)
@@ -180,7 +180,7 @@ def main(decimals,num_rows,clusters,routes):
         submit_answers(test_df,test_y_predictions)
     except IOError as e:
         print("BuildingFile: 'clean_train.csv' doesn't exist. Building file for future use. Rerun program once done.")
-        train_df = pd.read_csv('/mnt/obelisk/taxi_cab/train.csv')
+        train_df = pd.read_csv('/mnt/obelisk/projects/Taxi_cab/train.csv')
         clean_dataset(train_df)
 
 clusters = 1500

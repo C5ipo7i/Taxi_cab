@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import os
 
-train_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/train.csv')
+train_df = pd.read_csv('/mnt/obelisk/projects/Taxi_cab/train.csv')
 train_df.dtypes
 
 def add_travel_vector_features(df):
@@ -36,7 +36,7 @@ print(w)
 w_OLS = np.matmul(np.matmul(np.linalg.inv(np.matmul(train_X.T, train_X)), train_X.T), train_y)
 print(w_OLS)
 
-test_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/test.csv')
+test_df = pd.read_csv('/mnt/obelisk/projects/Taxi_cab/test.csv')
 print(test_df.dtypes)
 
 add_travel_vector_features(test_df)
