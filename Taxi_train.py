@@ -90,6 +90,67 @@ def normalize_minmax(df):
     normalized_df=(df-df.min())/(df.max()-df.min())
     return normalized_df
 
+def return_training_set(decimals,num_rows,dataset):
+    #for reproducibility 
+    seed = 9
+    np.random.seed(seed)
+    train_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/train.csv',nrows=num_rows)
+    cleaned_dataset = clean_dataset(train_df)
+    tic = time.time()
+    add_hour(cleaned_dataset)
+    add_day(cleaned_dataset)
+    add_perimeter_distance(cleaned_dataset)
+    add_location_categories(cleaned_dataset,decimals)
+    toc = time.time()
+    print("Adding features took ",str((toc-tic)/60),' Minutes')
+    #split dataset
+    X = cleaned_dataset.loc[:,['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','passenger_count','hour','day','perimeter_distance','pickup_region','dropoff_region']]#'pickup_clusters','dropoff_clusters'
+    y = cleaned_dataset['fare_amount']
+    data_to_norm = cleaned_dataset.loc[:,['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','perimeter_distance']]
+    data_classes_train = cleaned_dataset.loc[:,['passenger_count','hour','day','pickup_region','dropoff_region']]#'pickup_clusters','dropoff_clusters'
+    #Normalized training distance and LAT,LONG
+    scaler = StandardScaler().fit(data_to_norm)
+    X_train_scaled = pd.DataFrame(scaler.transform(data_to_norm), index=data_to_norm.index.values, columns=data_to_norm.columns.values)
+    normalized_df_train = normalize_mean(data_to_norm)
+
+    #concat the target training set
+    X_train_mean = pd.concat([normalized_df_train,data_classes_train],axis=1)
+    X_train_scalar = pd.concat([X_train_scaled,data_classes_train],axis=1)
+    #model vars
+    taxi_input = np.array(len(X.columns)).reshape(1,)
+    regions = ((2*10**decimals)+10**(decimals-1)) * 3*10**decimals
+    if dataset=='default':
+        X_train = X
+    elif dataset=='mean':
+        X_train = X_train_mean
+    else:
+        X_train = X_train_scalar
+    return X_train,y,taxi_input,regions
+
+def return_test_set(decimals,dataset):
+    test_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/test.csv')
+    add_hour(test_df)
+    add_day(test_df)
+    add_perimeter_distance(test_df)
+    add_location_categories(test_df,decimals)
+    #test set
+    test_X = test_df.loc[:,['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','passenger_count','hour','day','perimeter_distance','pickup_region','dropoff_region']]
+    data_to_norm_test = test_df.loc[:,['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','perimeter_distance']]
+    data_classes_test = test_df.loc[:,['passenger_count','hour','day','pickup_region','dropoff_region']]
+    #Normalized test distance and LAT,LONG
+    X_test_scaled = pd.DataFrame(scaler.transform(data_to_norm_test), index=data_to_norm_test.index.values, columns=data_to_norm_test.columns.values)
+    normalized_df_test = normalize_mean(data_to_norm_test)
+    #concat target test set
+    X_test_mean = pd.concat([normalized_df_test,data_classes_test],axis=1)
+    X_test_scalar = pd.concat([X_test_scaled,data_classes_test],axis=1)
+    if dataset=='default':
+        X_test = test_X
+    elif dataset=='mean':
+        X_test = X_test_mean
+    else:
+        X_test = X_test_scalar
+    return X_test
+
 def main(decimals,num_rows,clusters,routes):
     #for reproducibility 
     seed = 9
@@ -103,7 +164,7 @@ def main(decimals,num_rows,clusters,routes):
     add_perimeter_distance(cleaned_dataset)
     add_location_categories(cleaned_dataset,decimals) # 2 decimals = 200 * 300 = 60k
     #add_holidays(cleaned_dataset)
-    region_clusters = add_K_mean_regions(cleaned_dataset,clusters)
+    #region_clusters = add_K_mean_regions(cleaned_dataset,clusters)
     #grid_clusters = add_K_mean_grid_routes(cleaned_dataset,routes)
     #default_clusters = add_K_mean_routes(df,routes)
     #np.savetxt(self.plot_path+str(i)+".txt", numpy_loss_history, delimiter=",")
@@ -114,10 +175,10 @@ def main(decimals,num_rows,clusters,routes):
     #save Cluster centers so don't have to recalculate them
 
     #split dataset
-    X = cleaned_dataset.loc[:,['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','passenger_count','hour','day','perimeter_distance','pickup_region','dropoff_region','route_grid_clusters']]#'pickup_clusters','dropoff_clusters'
+    X = cleaned_dataset.loc[:,['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','passenger_count','hour','day','perimeter_distance','pickup_region','dropoff_region']]#'pickup_clusters','dropoff_clusters'
     y = cleaned_dataset['fare_amount']
     data_to_norm = cleaned_dataset.loc[:,['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','perimeter_distance']]
-    data_classes_train = cleaned_dataset.loc[:,['passenger_count','hour','day','pickup_region','dropoff_region','route_grid_clusters']]#'pickup_clusters','dropoff_clusters'
+    data_classes_train = cleaned_dataset.loc[:,['passenger_count','hour','day','pickup_region','dropoff_region']]#'pickup_clusters','dropoff_clusters'
     #Normalized training distance and LAT,LONG
     scaler = StandardScaler().fit(data_to_norm)
     X_train_scaled = pd.DataFrame(scaler.transform(data_to_norm), index=data_to_norm.index.values, columns=data_to_norm.columns.values)
@@ -158,7 +219,7 @@ def main(decimals,num_rows,clusters,routes):
     add_perimeter_distance(test_df)
     add_location_categories(test_df,decimals) # 2 decimals = 200 * 300 = 60k
     #add_holidays(test_df)
-    add_K_mean_regions(test_df,clusters)
+    #add_K_mean_regions(test_df,clusters)
     #add_K_mean_grid_routes(test_df,routes)
 
 
@@ -178,8 +239,8 @@ def main(decimals,num_rows,clusters,routes):
     #create answer csv file
     submit_answers(test_df,test_y_predictions)
 
-clusters = 1500
-routes = 10000
-decimals = 2
-num_rows = 10000000
-main(decimals,num_rows,clusters,routes)
+#clusters = 1500
+#routes = 10000
+#decimals = 2
+#num_rows = 10000000
+#main(decimals,num_rows,clusters,routes)
