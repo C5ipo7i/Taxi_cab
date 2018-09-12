@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import os
-from Taxi_models import *
+from Taxi_models import taxi_model_V5
 import tensorflow as tf
 from day_of_week import vectorized_dayofweek
 from sklearn.preprocessing import StandardScaler
@@ -181,7 +181,6 @@ def main(decimals,num_rows,clusters,routes):
 def create_clean_dataset():
     train_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/train.csv')
     clean_dataset(train_df)
-    print('finished')
 
 clusters = 1500
 routes = 10000
