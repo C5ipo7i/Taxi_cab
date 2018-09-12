@@ -30,11 +30,14 @@ Test set attributes:
 Fix saving so don't have to clean dataset everytime. And can load from disk
 """
 def get_path():
-    if os.path.dirname(sys.argv[0]) == '/media/shuza/HDD_Toshiba/Taxi_NYC/':
+    print(os.path.dirname(sys.argv[0]),'path')
+    #print(os.path.dirname(sys.argv[0]) == '/media/shuza/HDD_Toshiba/Taxi_NYC')
+    if os.path.dirname(sys.argv[0]) == '/media/shuza/HDD_Toshiba/Taxi_NYC':
         clean_data_path = os.path.join(os.path.dirname(sys.argv[0]), "clean_train.csv")
     else:
         training_dir_alex = os.path.join(os.path.dirname(sys.argv[0]), "Training_set")
         clean_data_path = os.path.join(training_dir_alex, "clean_train.csv")
+    print(clean_data_path,'clean_data_path')
     return clean_data_path
 
 def clean_dataset(train_df):
@@ -72,6 +75,7 @@ def clean_dataset(train_df):
     
     #creating new csv called clean_train
     #clean_train_df = '/media/shuza/HDD_Toshiba/Taxi_NYC/clean_train.csv'
+    clean_data_path = get_path()
     clean_train_df = clean_data_path
     with open(clean_train_df, 'w', newline='\n') as f_output:
         csv_output = csv.writer(f_output)
