@@ -178,12 +178,14 @@ def main(decimals,num_rows,clusters,routes):
     #create answer csv file
     submit_answers(test_df,test_y_predictions)
         
+def create_clean_dataset():
+    train_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/train.csv')
+    clean_dataset(train_df)
+    print('finished')
 
 clusters = 1500
 routes = 10000
 decimals = 2
 num_rows = 10000000
+create_clean_dataset()
 #main(decimals,num_rows,clusters,routes)
-train_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/train.csv')
-clean_dataset(train_df)
-print('finished')
