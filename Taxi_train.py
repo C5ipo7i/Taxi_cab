@@ -8,7 +8,7 @@ from sklearn.preprocessing import StandardScaler
 import time
 
 from feature_utils import *
-from clean_data import clean_dataset
+from clean_data import clean_dataset,get_path
 
 """
 Outline:
@@ -94,7 +94,8 @@ def main(decimals,num_rows,clusters,routes):
     #for reproducibility 
     seed = 9
     np.random.seed(seed)
-    with open('/media/shuza/HDD_Toshiba/Taxi_NYC/clean_train.csv') as clean_train_csv:
+    training_data_path = get_path()
+    with open(training_data_path) as clean_train_csv:
         cleaned_dataset = pd.read_csv(clean_train_csv,nrows=num_rows)
     tic = time.time()
     add_hour(cleaned_dataset)
@@ -135,8 +136,10 @@ def main(decimals,num_rows,clusters,routes):
     alpha = 0.002
     learning_rate=0.002
     #Will have to adjust this to local directory
-    weight_path = '/media/shuza/HDD_Toshiba/Taxi_NYC/weights/weights_V5_best.hdf5'
-    model_path = '/media/shuza/HDD_Toshiba/Taxi_NYC/models/V5_checkpoint'
+    weight_path = os.path.join(os.path.dirname(sys.argv[0]), "weights/weights_V5_best.hdf5")
+    model_path = os.path.join(os.path.dirname(sys.argv[0]), "models/V5_checkpoint")
+    #weight_path = '/media/shuza/HDD_Toshiba/Taxi_NYC/weights/weights_V5_best.hdf5'
+    #model_path = '/media/shuza/HDD_Toshiba/Taxi_NYC/models/V5_checkpoint'
     verbosity = 1
     num_epochs = 100
     num_batches = 1024
@@ -151,7 +154,10 @@ def main(decimals,num_rows,clusters,routes):
     save_model(model,model_path)
 
     #Will have to adjust this to local directory
-    test_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/test.csv')
+
+    test_path = os.path.join(os.path.dirname(sys.argv[0]), "test.csv")
+    test_df = pd.read_csv('test_path')
+    #test_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/test.csv')
     add_hour(test_df)
     #add_24_hour(test_df)
     add_day(test_df)
@@ -179,7 +185,9 @@ def main(decimals,num_rows,clusters,routes):
     submit_answers(test_df,test_y_predictions)
         
 def create_clean_dataset():
-    train_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/train.csv')
+    training_data_path = get_path()
+    train_df = pd.read_csv(training_data_path)
+    #train_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/train.csv')
     clean_dataset(train_df)
 
 clusters = 1500
