@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import os
+import sys
 from Taxi_models import taxi_model_V5
 import tensorflow as tf
 from day_of_week import vectorized_dayofweek
@@ -8,7 +9,7 @@ from sklearn.preprocessing import StandardScaler
 import time
 
 from feature_utils import *
-from clean_data import clean_dataset
+from clean_data import clean_dataset,get_clean_data_path
 
 """
 Outline:
@@ -94,8 +95,9 @@ def main(decimals,num_rows,clusters,routes):
     #for reproducibility 
     seed = 9
     np.random.seed(seed)
+    training_data_path = get_clean_data_path()
     try:
-        with open('/mnt/obelisk/projects/Taxi_cab/clean_train.csv') as clean_train_csv:
+        with open(training_data_path) as clean_train_csv:
             cleaned_dataset = pd.read_csv(clean_train_csv,nrows=num_rows)
         tic = time.time()
         add_hour(cleaned_dataset)
@@ -104,7 +106,7 @@ def main(decimals,num_rows,clusters,routes):
         add_perimeter_distance(cleaned_dataset)
         add_location_categories(cleaned_dataset,decimals) # 2 decimals = 200 * 300 = 60k
         #add_holidays(cleaned_dataset)
-        region_clusters = add_K_mean_regions(cleaned_dataset,clusters)
+        #region_clusters = add_K_mean_regions(cleaned_dataset,clusters)
         #grid_clusters = add_K_mean_grid_routes(cleaned_dataset,routes)
         #default_clusters = add_K_mean_routes(df,routes)
         #np.savetxt(self.plot_path+str(i)+".txt", numpy_loss_history, delimiter=",")
@@ -136,8 +138,10 @@ def main(decimals,num_rows,clusters,routes):
         alpha = 0.002
         learning_rate=0.002
         #Will have to adjust this to local directory
-        weight_path = '/mnt/obelisk/projects/Taxi_cab/weights/weights_V5_best.hdf5'
-        model_path = '/mnt/obelisk/projects/Taxi_cab/models/V5_checkpoint'
+        weight_path = os.path.join(os.path.dirname(sys.argv[0]), "weights/weights_V5_best.hdf5")
+        model_path = os.path.join(os.path.dirname(sys.argv[0]), "models/V5_checkpoint")
+        #weight_path = '/media/shuza/HDD_Toshiba/Taxi_NYC/weights/weights_V5_best.hdf5'
+        #model_path = '/media/shuza/HDD_Toshiba/Taxi_NYC/models/V5_checkpoint'
         verbosity = 1
         num_epochs = 100
         num_batches = 1024
@@ -152,7 +156,10 @@ def main(decimals,num_rows,clusters,routes):
         save_model(model,model_path)
 
         #Will have to adjust this to local directory
-        test_df = pd.read_csv('/mnt/obelisk/projects/Taxi_cab/test.csv')
+
+        test_path = os.path.join(os.path.dirname(sys.argv[0]), "test.csv")
+        test_df = pd.read_csv(test_path)
+        #test_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/test.csv')
         add_hour(test_df)
         #add_24_hour(test_df)
         add_day(test_df)
@@ -179,12 +186,17 @@ def main(decimals,num_rows,clusters,routes):
         #create answer csv file
         submit_answers(test_df,test_y_predictions)
     except IOError as e:
-        print("BuildingFile: 'clean_train.csv' doesn't exist. Building file for future use. Rerun program once done.")
-        train_df = pd.read_csv('/mnt/obelisk/projects/Taxi_cab/train.csv')
-        clean_dataset(train_df)
+        create_clean_dataset()
+
+def create_clean_dataset():
+    print("BuildingFile: 'clean_train.csv' doesn't exist. Building file for future use. Rerun program once done.")
+    training_path = os.path.join(os.getcwd(), "train.csv")
+    train_df = pd.read_csv(training_path, nrows=1000000)
+    clean_dataset(train_df)
 
 clusters = 1500
 routes = 10000
 decimals = 2
-num_rows = 10000
+num_rows = 10000000
+#create_clean_dataset()
 main(decimals,num_rows,clusters,routes)

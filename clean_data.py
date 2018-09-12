@@ -1,10 +1,11 @@
 import numpy as np
 import pandas as pd
 import os
+import sys
 import csv
 from tqdm import tqdm
 
-from feature_utils import *
+#from feature_utils import *
 
 """
 Outline:
@@ -28,15 +29,20 @@ Test set attributes:
 
 Fix saving so don't have to clean dataset everytime. And can load from disk
 """
+def get_clean_data_path():
+    clean_data_path = os.path.join(os.getcwd(), "clean_train.csv")
+    print(clean_data_path,'clean_data_path')
+    return clean_data_path
 
 def clean_dataset(train_df):
-#train_df = pd.read_csv('/mnt/obelisk/projects/Taxi_cab/train.csv',nrows=100000)
+    #train_df = pd.read_csv('/mnt/obelisk/projects/Taxi_cab/train.csv',nrows=100000)
     #train_df = pd.read_csv('/mnt/obelisk/projects/Taxi_cab/train.csv')
 
     #max_list = [max(train_df.dropoff_longitude),max(train_df.pickup_longitude),max(train_df.dropoff_latitude),max(train_df.pickup_latitude),max(train_df.passenger_count)]
     #min_list = [min(train_df.dropoff_longitude),min(train_df.pickup_longitude),min(train_df.dropoff_latitude),min(train_df.pickup_latitude),min(train_df.passenger_count)]
     #print(max_list)
     #print(min_list)
+
 
     print('Old size: %d' % len(train_df))
     train_df = train_df[(train_df.dropoff_longitude > -75) & (train_df.dropoff_longitude < -72)]
@@ -62,7 +68,9 @@ def clean_dataset(train_df):
     cleaned_training_set = train_df
     
     #creating new csv called clean_train
-    clean_train_df = '/mnt/obelisk/projects/Taxi_cab/clean_train.csv'
+    #clean_train_df = '/media/shuza/HDD_Toshiba/Taxi_NYC/clean_train.csv'
+    cleaned_dataset_path = get_clean_data_path()
+    clean_train_df = cleaned_dataset_path
     with open(clean_train_df, 'w', newline='\n') as f_output:
         csv_output = csv.writer(f_output)
         #include column values
@@ -71,7 +79,7 @@ def clean_dataset(train_df):
         #set up tqdm progress bar
         with tqdm(total=len(list(cleaned_training_set.iterrows()))) as pbar:
             #while new file is open, write rows from cleaned_training_set to it
-            for index, row in cleaned_training_set.iterrows():
+            for _, row in cleaned_training_set.iterrows():
                 csv_output.writerow(row)
                 pbar.update(1)
 
@@ -79,7 +87,9 @@ def clean_dataset(train_df):
 
 #check test set for outliers
 def check_test_set():
-    test_df = pd.read_csv('/mnt/obelisk/projects/Taxi_cab/test.csv')
+    path = get_clean_data_path()
+    #test_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/test.csv')
+    test_df = pd.read_csv(path)
     max_list = [max(test_df.dropoff_longitude),max(test_df.pickup_longitude),max(test_df.dropoff_latitude),max(test_df.pickup_latitude),max(test_df.passenger_count)]
     min_list = [min(test_df.dropoff_longitude),min(test_df.pickup_longitude),min(test_df.dropoff_latitude),min(test_df.pickup_latitude),min(test_df.passenger_count)]
     print(max_list,'final max values')

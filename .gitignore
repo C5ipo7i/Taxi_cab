@@ -5,6 +5,6 @@ __pycache__/
 test.csv
 train.csv
 sample_submission.csv
-models
+Models
 weights
 clean_train.csv
