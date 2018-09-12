@@ -75,8 +75,8 @@ def clean_dataset(train_df):
     
     #creating new csv called clean_train
     #clean_train_df = '/media/shuza/HDD_Toshiba/Taxi_NYC/clean_train.csv'
-    clean_data_path = get_path()
-    clean_train_df = clean_data_path
+    cleaned_dataset_path = get_path()
+    clean_train_df = cleaned_dataset_path
     with open(clean_train_df, 'w', newline='\n') as f_output:
         csv_output = csv.writer(f_output)
         #include column values

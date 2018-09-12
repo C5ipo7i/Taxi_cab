@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import os
+import sys
 from Taxi_models import taxi_model_V5
 import tensorflow as tf
 from day_of_week import vectorized_dayofweek
@@ -156,7 +157,7 @@ def main(decimals,num_rows,clusters,routes):
     #Will have to adjust this to local directory
 
     test_path = os.path.join(os.path.dirname(sys.argv[0]), "test.csv")
-    test_df = pd.read_csv('test_path')
+    test_df = pd.read_csv(test_path)
     #test_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/test.csv')
     add_hour(test_df)
     #add_24_hour(test_df)
@@ -185,8 +186,8 @@ def main(decimals,num_rows,clusters,routes):
     submit_answers(test_df,test_y_predictions)
         
 def create_clean_dataset():
-    training_data_path = get_path()
-    train_df = pd.read_csv(training_data_path)
+    training_path = os.path.join(os.path.dirname(sys.argv[0]), "train.csv")
+    train_df = pd.read_csv(training_path)
     #train_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/train.csv')
     clean_dataset(train_df)
 
