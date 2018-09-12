@@ -61,7 +61,7 @@ def clean_dataset(train_df):
     cleaned_training_set = train_df
 
     #creating new csv called clean_train
-    clean_train_df = '/mnt/obelisk/projects/Taxi_cab/clean_train.csv'
+    clean_train_df = '/media/shuza/HDD_Toshiba/Taxi_NYC/clean_train.csv'
     with open(clean_train_df, 'w', newline='\n') as f_output:
         csv_output = csv.writer(f_output)
         #include column values
@@ -76,7 +76,7 @@ def clean_dataset(train_df):
 
 #check test set for outliers
 def check_test_set():
-    test_df = pd.read_csv('/mnt/obelisk/projects/Taxi_cab/test.csv')
+    test_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/test.csv')
     max_list = [max(test_df.dropoff_longitude),max(test_df.pickup_longitude),max(test_df.dropoff_latitude),max(test_df.pickup_latitude),max(test_df.passenger_count)]
     min_list = [min(test_df.dropoff_longitude),min(test_df.pickup_longitude),min(test_df.dropoff_latitude),min(test_df.pickup_latitude),min(test_df.passenger_count)]
     print(max_list,'final max values')
