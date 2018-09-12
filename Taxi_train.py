@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import os
-from Taxi_models import *
+from Taxi_models import taxi_model_V5
 import tensorflow as tf
 from day_of_week import vectorized_dayofweek
 from sklearn.preprocessing import StandardScaler
@@ -180,11 +180,11 @@ def main(decimals,num_rows,clusters,routes):
         submit_answers(test_df,test_y_predictions)
     except IOError as e:
         print("BuildingFile: 'clean_train.csv' doesn't exist. Building file for future use. Rerun program once done.")
-        train_df = pd.read_csv('/mnt/obelisk/projects/Taxi_cab/train.csv')
+        train_df = pd.read_csv('/mnt/obelisk/projects/Taxi_cab/train.csv',nrows=1000000)
         clean_dataset(train_df)
 
 clusters = 1500
 routes = 10000
 decimals = 2
-num_rows = 10000000
+num_rows = 10000
 main(decimals,num_rows,clusters,routes)

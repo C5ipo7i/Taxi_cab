@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import os
 import csv
+from tqdm import tqdm
 
 from feature_utils import *
 
@@ -59,7 +60,7 @@ def clean_dataset(train_df):
     print('New size: %d' % len(train_df))
 
     cleaned_training_set = train_df
-
+    
     #creating new csv called clean_train
     clean_train_df = '/mnt/obelisk/projects/Taxi_cab/clean_train.csv'
     with open(clean_train_df, 'w', newline='\n') as f_output:
@@ -67,12 +68,14 @@ def clean_dataset(train_df):
         #include column values
         header_values = cleaned_training_set.columns.values
         csv_output.writerow(header_values)
-        #while new file is open, write rows from cleaned_training_set to it
-        for index, row in cleaned_training_set.iterrows():
-            csv_output.writerow(row)
+        #set up tqdm progress bar
+        with tqdm(total=len(list(cleaned_training_set.iterrows()))) as pbar:
+            #while new file is open, write rows from cleaned_training_set to it
+            for index, row in cleaned_training_set.iterrows():
+                csv_output.writerow(row)
+                pbar.update(1)
 
     #return cleaned_training_set
-
 
 #check test set for outliers
 def check_test_set():
