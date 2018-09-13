@@ -1,4 +1,5 @@
 import numpy as np
+import keras.utils
 
 class DataGenerator(keras.utils.Sequence):
     def __init__(self,list_IDs,labels,batch_size,dim,n_channels=1,n_classes=10, shuffle=True):

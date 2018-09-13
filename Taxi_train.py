@@ -138,8 +138,8 @@ def main(decimals,num_rows,clusters,routes):
         alpha = 0.002
         learning_rate=0.002
         #Will have to adjust this to local directory
-        weight_path = os.path.join(os.path.dirname(sys.argv[0]), "weights/weights_V5_best.hdf5")
-        model_path = os.path.join(os.path.dirname(sys.argv[0]), "models/V5_checkpoint")
+        weight_path = os.path.join(os.getcwd(), "weights/weights_V5_best.hdf5")
+        model_path = os.path.join(os.getcwd(), "models/V5_checkpoint")
         #weight_path = '/media/shuza/HDD_Toshiba/Taxi_NYC/weights/weights_V5_best.hdf5'
         #model_path = '/media/shuza/HDD_Toshiba/Taxi_NYC/models/V5_checkpoint'
         verbosity = 1
@@ -157,7 +157,7 @@ def main(decimals,num_rows,clusters,routes):
 
         #Will have to adjust this to local directory
 
-        test_path = os.path.join(os.path.dirname(sys.argv[0]), "test.csv")
+        test_path = os.path.join(os.getcwd(), "test.csv")
         test_df = pd.read_csv(test_path)
         #test_df = pd.read_csv('/media/shuza/HDD_Toshiba/Taxi_NYC/test.csv')
         add_hour(test_df)

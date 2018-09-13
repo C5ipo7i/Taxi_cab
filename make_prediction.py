@@ -3,6 +3,7 @@ from keras.callbacks import ModelCheckpoint
 from keras.optimizers import Adam, SGD
 from keras.utils import multi_gpu_model
 import tensorflow as tf
+import os
 
 import numpy as np
 from sklearn.preprocessing import StandardScaler
@@ -15,14 +16,14 @@ from Taxi_models import *
 decimals = 2
 clusters = 500
 #load data
-test_df = pd.read_csv('/mnt/obelisk/projects/Taxi_cab/test.csv')
+test_df = pd.read_csv(os.path.join(os.getcwd(),'test.csv'))
 add_hour(test_df)
 #add_24_hour(cleaned_dataset)
 add_day(test_df)
 add_perimeter_distance(test_df)
 add_location_categories(test_df,decimals) # 2 decimals = 200 * 300 = 60k
 add_holidays(test_df)
-add_K_mean_regions(cleaned_dataset,clusters)
+#add_K_mean_regions(cleaned_dataset,clusters)
 
 test_X = test_df.loc[:,['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','passenger_count','hour','day','perimeter_distance','pickup_region','dropoff_region','holiday','pickup_clusters','dropoff_clusters']]
 data_to_norm_test = test_df.loc[:,['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude','perimeter_distance']]
@@ -43,8 +44,8 @@ learning_rate=0.002
 regions = ((2*10**decimals)+10**(decimals-1)) * 3*10**decimals
 
 #load checkpoint model
-model_path = '/mnt/obelisk/projects/Taxi_cab/models/V5_checkpoint'
-weight_path = '/mnt/obelisk/projects/Taxi_cab/weights/weights_V5_best.hdf5'
+model_path = os.path.join(os.getcwd(), "Models/V5_checkpoint")
+weight_path = os.path.join(os.getcwd(), "weights/weights_V5_best.hdf5")
 
 #compile model with hyperparams
 opt = Adam(lr=learning_rate,beta_1=0.9,beta_2=0.999,decay=0)

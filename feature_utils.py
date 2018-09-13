@@ -42,7 +42,7 @@ def add_location_categories(df,decimals):
     temp_lat = df.dropoff_latitude - 40
     pickup_long = df.pickup_longitude + 72
     pickup_lat = df.pickup_latitude - 40
-    check = temp_long.values
+    #check = temp_long.values
     drop_long_key = np.round(temp_long.values,decimals)
     drop_lat_key = np.round(temp_lat.values,decimals)
     pickup_long_key = np.round(pickup_long.values,decimals)
