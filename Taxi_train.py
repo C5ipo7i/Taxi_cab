@@ -166,7 +166,7 @@ def main(decimals,num_rows,clusters,routes):
         add_perimeter_distance(test_df)
         add_location_categories(test_df,decimals) # 2 decimals = 200 * 300 = 60k
         #add_holidays(test_df)
-        add_K_mean_regions(test_df,clusters)
+        #add_K_mean_regions(test_df,clusters)
         #add_K_mean_grid_routes(test_df,routes)
 
 
@@ -191,7 +191,7 @@ def main(decimals,num_rows,clusters,routes):
 def create_clean_dataset():
     print("BuildingFile: 'clean_train.csv' doesn't exist. Building file for future use. Rerun program once done.")
     training_path = os.path.join(os.getcwd(), "train.csv")
-    train_df = pd.read_csv(training_path, nrows=1000000)
+    train_df = pd.read_csv(training_path, nrows=100000)
     clean_dataset(train_df)
 
 clusters = 1500

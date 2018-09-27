@@ -86,14 +86,14 @@ def split_pickup(tensor):
     return tensor[:,3]
 def split_dropoff(tensor):
     return tensor[:,4]
-def split_holiday(tensor):
-    return tensor[:,5]
+#def split_holiday(tensor):
+    #return tensor[:,5]
 def split_pickup_cluster(tensor):
-    return tensor[:,6]
+    return tensor[:,5]
 def split_dropoff_cluster(tensor):
-    return tensor[:,7]
+    return tensor[:,6]
 def split_route_cluster(tensor):
-    return tensor[:,8]
+    return tensor[:,7]
 
 
 #Think the classes are -2 and -3? recheck this
@@ -211,7 +211,7 @@ def taxi_model_V5(Input_shape,L2,regions,clusters,routes):
     day = Lambda(split_day,output_shape=(1,))(classes)
     pickup = Lambda(split_pickup,output_shape=(1,))(classes)
     dropoff = Lambda(split_dropoff,output_shape=(1,))(classes)
-    holiday = Lambda(split_holiday,output_shape=(1,))(classes)
+    #holiday = Lambda(split_holiday,output_shape=(1,))(classes)
     pickup_cluster = Lambda(split_pickup_cluster,output_shape=(1,))(classes)
     dropoff_cluster = Lambda(split_dropoff_cluster,output_shape=(1,))(classes) 
     routes_cluster = Lambda(split_route_cluster,output_shape=(1,))(classes) 
